@@ -19,16 +19,13 @@ router.route('/public/:id')
   .get(getIdeiaPublic);
 
 // Rotas protegidas (para o CMS admin)
-router.use(protect);
-
-// Rotas para ideias
 router.route('/')
-  .get(getAllIdeias)
-  .post(createIdeia);
+  .get(protect, getAllIdeias)
+  .post(protect, createIdeia);
 
 router.route('/:id')
-  .get(getIdeia)
-  .patch(updateIdeia)
-  .delete(restrictTo('admin'), deleteIdeia);
+  .get(protect, getIdeia)
+  .patch(protect, updateIdeia)
+  .delete(protect, restrictTo('admin'), deleteIdeia);
 
 module.exports = router;

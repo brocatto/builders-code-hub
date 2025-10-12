@@ -19,16 +19,13 @@ router.route('/public/:id')
   .get(getLogPublic);
 
 // Rotas protegidas (para o CMS admin)
-router.use(protect);
-
-// Rotas para logs
 router.route('/')
-  .get(getAllLogs)
-  .post(createLog);
+  .get(protect, getAllLogs)
+  .post(protect, createLog);
 
 router.route('/:id')
-  .get(getLog)
-  .patch(updateLog)
-  .delete(restrictTo('admin'), deleteLog);
+  .get(protect, getLog)
+  .patch(protect, updateLog)
+  .delete(protect, restrictTo('admin'), deleteLog);
 
 module.exports = router;
