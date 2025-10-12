@@ -49,6 +49,9 @@ const allowedOrigins = [
   // URLs da Vercel (adicione as URLs reais dos seus deploys)
   'https://builders-code-v3.vercel.app',
   'https://builders-code-cms-frontend.vercel.app',
+  // Domínio personalizado (com e sem www)
+  'https://www.builderscode.com.br',
+  'https://builderscode.com.br',
   // Permite qualquer subdomínio da Vercel para este projeto
   /https:\/\/.*\.vercel\.app$/
 ].filter(Boolean);

@@ -1,10 +1,24 @@
 // API Service for Builder's Code Hub v3
 import axios from 'axios';
 
+// Get API URL from environment or use development default
+const getApiUrl = () => {
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    console.error('REACT_APP_API_URL not configured! Please set it in Vercel environment variables.');
+    // Return a placeholder that will trigger clear error messages
+    return 'MISSING_API_URL_ENV_VAR';
+  }
+
+  return 'http://localhost:5000/api';
+};
+
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 
-           (process.env.NODE_ENV === 'production' ? 'https://builders-code-cms-backend-9g0zqfie6-brocattos-projects.vercel.app/api' : 'http://localhost:5000/api'),
+  baseURL: getApiUrl(),
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

@@ -1,9 +1,23 @@
 import axios from 'axios';
 
+// Get API URL from environment or use development default
+const getApiUrl = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+
+  if (import.meta.env.PROD) {
+    console.error('VITE_API_URL not configured! Please set it in Vercel environment variables.');
+    // Return a placeholder that will trigger clear error messages
+    return 'MISSING_API_URL_ENV_VAR';
+  }
+
+  return 'http://localhost:5000';
+};
+
 // Criar instância do axios com URL base
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 
-           (import.meta.env.PROD ? 'https://builders-code-cms-backend-9g0zqfie6-brocattos-projects.vercel.app' : 'http://localhost:5000'),
+  baseURL: getApiUrl(),
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
