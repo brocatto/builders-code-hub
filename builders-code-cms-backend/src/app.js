@@ -5,7 +5,6 @@ const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
 const xss = require('xss-clean');
-const path = require('path');
 const dotenv = require('dotenv');
 
 // Importar rotas
@@ -85,9 +84,6 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// Arquivos estáticos
-app.use(express.static(path.join(__dirname, '../public')));
-
 // Rotas da API
 app.use('/api/auth', authRoutes);
 app.use('/api/projetos', projetoRoutes);
@@ -107,14 +103,7 @@ app.get('/api/status', (req, res) => {
   });
 });
 
-// Frontend em produção
-if (process.env.NODE_ENV === 'production') {
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/index.html'));
-  });
-}
-
-// 404 handler
+// 404 handler for API routes
 app.all('*', (req, res) => {
   res.status(404).json({
     status: 'error',
