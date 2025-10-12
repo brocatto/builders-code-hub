@@ -2,16 +2,21 @@ import axios from 'axios';
 
 // Get API URL from environment or use development default
 const getApiUrl = () => {
+  // Check if environment variable is set
   if (import.meta.env.VITE_API_URL) {
+    console.log('✅ Using VITE_API_URL:', import.meta.env.VITE_API_URL);
     return import.meta.env.VITE_API_URL;
   }
 
+  // Production fallback (temporary until env var is configured)
   if (import.meta.env.PROD) {
-    console.error('VITE_API_URL not configured! Please set it in Vercel environment variables.');
-    // Return a placeholder that will trigger clear error messages
-    return 'MISSING_API_URL_ENV_VAR';
+    console.warn('⚠️ VITE_API_URL not configured! Using temporary fallback URL.');
+    console.warn('Please configure VITE_API_URL in Vercel environment variables.');
+    // Temporary fallback to known working URL
+    return 'https://builders-code-cms-backend-i3c2r53m1-brocattos-projects.vercel.app';
   }
 
+  // Development default
   return 'http://localhost:5000';
 };
 

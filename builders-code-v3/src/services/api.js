@@ -3,16 +3,21 @@ import axios from 'axios';
 
 // Get API URL from environment or use development default
 const getApiUrl = () => {
+  // Check if environment variable is set
   if (process.env.REACT_APP_API_URL) {
+    console.log('✅ Using REACT_APP_API_URL:', process.env.REACT_APP_API_URL);
     return process.env.REACT_APP_API_URL;
   }
 
+  // Production fallback (temporary until env var is configured)
   if (process.env.NODE_ENV === 'production') {
-    console.error('REACT_APP_API_URL not configured! Please set it in Vercel environment variables.');
-    // Return a placeholder that will trigger clear error messages
-    return 'MISSING_API_URL_ENV_VAR';
+    console.warn('⚠️ REACT_APP_API_URL not configured! Using temporary fallback URL.');
+    console.warn('Please configure REACT_APP_API_URL in Vercel environment variables.');
+    // Temporary fallback to known working URL
+    return 'https://builders-code-cms-backend-i3c2r53m1-brocattos-projects.vercel.app/api';
   }
 
+  // Development default
   return 'http://localhost:5000/api';
 };
 
