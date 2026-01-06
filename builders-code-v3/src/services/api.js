@@ -9,12 +9,9 @@ const getApiUrl = () => {
     return process.env.REACT_APP_API_URL;
   }
 
-  // Production fallback (temporary until env var is configured)
+  // Production fallback - uses stable production alias
   if (process.env.NODE_ENV === 'production') {
-    console.warn('⚠️ REACT_APP_API_URL not configured! Using temporary fallback URL.');
-    console.warn('Please configure REACT_APP_API_URL in Vercel environment variables.');
-    // Temporary fallback to known working URL
-    return 'https://builders-code-cms-backend-i3c2r53m1-brocattos-projects.vercel.app/api';
+    return 'https://builders-code-cms-backend.vercel.app/api';
   }
 
   // Development default
