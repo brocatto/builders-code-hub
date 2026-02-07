@@ -13,7 +13,7 @@ const getApiUrl = () => {
     console.warn('⚠️ VITE_API_URL not configured! Using temporary fallback URL.');
     console.warn('Please configure VITE_API_URL in Vercel environment variables.');
     // Temporary fallback to known working URL
-    return 'https://builders-code-cms-backend-i3c2r53m1-brocattos-projects.vercel.app';
+    return 'https://builders-code-cms-backend-brocattos-projects.vercel.app';
   }
 
   // Development default
