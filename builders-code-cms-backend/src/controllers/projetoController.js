@@ -1,4 +1,5 @@
 const Projeto = require('../models/projetoModel');
+const Log = require('../models/logModel');
 const LogAtividade = require('../models/logAtividadeModel');
 
 // Registrar atividade do usuário
@@ -185,6 +186,76 @@ exports.deleteProjeto = async (req, res) => {
     res.status(500).json({
       status: 'error',
       message: 'Erro ao excluir projeto.',
+    });
+  }
+};
+
+// Toggle conclusão de fase + auto-criar log
+exports.toggleFaseConclusao = async (req, res) => {
+  try {
+    const { faseIndex, concluida, observacoes } = req.body;
+    const projeto = await Projeto.findById(req.params.id);
+
+    if (!projeto) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Projeto não encontrado.',
+      });
+    }
+
+    if (faseIndex < 0 || faseIndex >= projeto.fase.length) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Índice de fase inválido.',
+      });
+    }
+
+    projeto.fase[faseIndex].concluida = concluida;
+    projeto.fase[faseIndex].dataConclusao = concluida ? new Date() : null;
+
+    await projeto.save();
+
+    // Se marcando como concluída, criar log automaticamente
+    if (concluida) {
+      const now = new Date();
+      const dataFormatada = now.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      });
+
+      const faseName = projeto.fase[faseIndex].nome;
+      const textoLog = observacoes
+        ? `Fase "${faseName}" concluída - ${observacoes}`
+        : `Fase "${faseName}" concluída`;
+
+      await Log.create({
+        data: dataFormatada,
+        projeto: projeto.nome,
+        projetoId: projeto._id,
+        atualizacoes: [{ texto: textoLog, tipo: 'texto' }],
+        tags: ['fase-concluida'],
+      });
+    }
+
+    // Registrar atividade
+    await registrarAtividade(
+      req.user._id,
+      'update',
+      'projeto',
+      projeto._id,
+      { acao: 'toggle-fase', faseIndex, concluida },
+      req
+    );
+
+    res.status(200).json({
+      status: 'success',
+      data: { projeto },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: 'Erro ao atualizar fase do projeto.',
     });
   }
 };

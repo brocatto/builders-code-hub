@@ -105,12 +105,18 @@ const ProjetosAtuais = () => {
                 <div className="mb-4">
                   <h4 className="font-semibold mb-2">FASE ATUAL:</h4>
                   <ul className="space-y-1">
-                    {projeto.fase.map((item, i) => (
-                      <li key={i} className="flex items-start">
-                        <span className="text-primary mr-2 mt-1">•</span>
-                        <span>{item}</span>
-                      </li>
-                    ))}
+                    {projeto.fase.map((item, i) => {
+                      const nome = typeof item === 'object' ? item.nome : item;
+                      const concluida = typeof item === 'object' ? item.concluida : false;
+                      return (
+                        <li key={i} className="flex items-start">
+                          <span className={`mr-2 mt-1 ${concluida ? 'text-green-400' : 'text-primary'}`}>
+                            {concluida ? '\u2713' : '\u2022'}
+                          </span>
+                          <span className={concluida ? 'line-through text-gray-500' : ''}>{nome}</span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}

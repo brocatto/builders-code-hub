@@ -3,11 +3,13 @@ import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import api from '../../../services/api';
+import FaseConclusaoModal from '../../../components/FaseConclusaoModal';
 
 const ProjetosList = () => {
   const [projetos, setProjetos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [faseModal, setFaseModal] = useState({ open: false, projetoId: null, faseIndex: null, faseName: '' });
 
   useEffect(() => {
     fetchProjetos();
@@ -46,6 +48,40 @@ const ProjetosList = () => {
       month: '2-digit',
       year: 'numeric'
     });
+  };
+
+  const handleFaseCheckbox = (projetoId, faseIndex, fase) => {
+    if (!fase.concluida) {
+      // Marking as done -> open modal
+      setFaseModal({ open: true, projetoId, faseIndex, faseName: fase.nome });
+    } else {
+      // Unmarking -> call API directly
+      toggleFase(projetoId, faseIndex, false, '');
+    }
+  };
+
+  const toggleFase = async (projetoId, faseIndex, concluida, observacoes) => {
+    try {
+      await api.patch(`/api/projetos/${projetoId}/fase-toggle`, {
+        faseIndex,
+        concluida,
+        observacoes,
+      });
+      toast.success(concluida ? 'Fase concluída! Log criado.' : 'Fase desmarcada.');
+      fetchProjetos();
+    } catch (error) {
+      console.error('Erro ao atualizar fase:', error);
+      toast.error('Erro ao atualizar fase');
+    }
+  };
+
+  const handleFaseModalConfirm = (observacoes) => {
+    toggleFase(faseModal.projetoId, faseModal.faseIndex, true, observacoes);
+    setFaseModal({ open: false, projetoId: null, faseIndex: null, faseName: '' });
+  };
+
+  const handleFaseModalCancel = () => {
+    setFaseModal({ open: false, projetoId: null, faseIndex: null, faseName: '' });
   };
 
   if (loading) {
@@ -129,12 +165,21 @@ const ProjetosList = () => {
                   <div className="mb-4">
                     <h4 className="font-semibold mb-2">FASE ATUAL:</h4>
                     <ul className="space-y-1">
-                      {projeto.fase.map((item, i) => (
-                        <li key={i} className="flex items-start">
-                          <span className="text-primary mr-2 mt-1">•</span>
-                          <span>{item}</span>
-                        </li>
-                      ))}
+                      {projeto.fase.map((item, i) => {
+                        const nome = typeof item === 'object' ? item.nome : item;
+                        const concluida = typeof item === 'object' ? item.concluida : false;
+                        return (
+                          <li key={i} className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={concluida}
+                              onChange={() => handleFaseCheckbox(projeto._id, i, typeof item === 'object' ? item : { nome: item, concluida: false })}
+                              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-600 rounded bg-gray-700 mr-2 cursor-pointer flex-shrink-0"
+                            />
+                            <span className={concluida ? 'line-through text-gray-500' : ''}>{nome}</span>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 )}
@@ -204,6 +249,14 @@ const ProjetosList = () => {
             </Link>
           </motion.div>
         )}
+
+        {/* Modal de conclusão de fase */}
+        <FaseConclusaoModal
+          isOpen={faseModal.open}
+          faseName={faseModal.faseName}
+          onConfirm={handleFaseModalConfirm}
+          onCancel={handleFaseModalCancel}
+        />
 
         {/* Modal de confirmação - estilo website */}
         {confirmDelete && (

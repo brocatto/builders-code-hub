@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import api from '../../../services/api';
+import FaseConclusaoModal from '../../../components/FaseConclusaoModal';
 
 const ProjetosForm = () => {
   const { id } = useParams();
@@ -26,6 +27,7 @@ const ProjetosForm = () => {
   const [categorias, setCategorias] = useState([]);
   const [newFaseItem, setNewFaseItem] = useState('');
   const [newLink, setNewLink] = useState({ url: '', texto: '' });
+  const [faseModal, setFaseModal] = useState({ open: false, faseIndex: null, faseName: '' });
 
   // Buscar dados do projeto se estiver em modo de edição
   useEffect(() => {
@@ -76,7 +78,7 @@ const ProjetosForm = () => {
     if (newFaseItem.trim()) {
       setFormData({
         ...formData,
-        fase: [...formData.fase, newFaseItem.trim()]
+        fase: [...formData.fase, { nome: newFaseItem.trim(), concluida: false, dataConclusao: null }]
       });
       setNewFaseItem('');
     }
@@ -120,6 +122,50 @@ const ProjetosForm = () => {
       ...formData,
       links: updatedLinks
     });
+  };
+
+  // Toggle fase no form
+  const handleFaseCheckbox = (index) => {
+    const fase = formData.fase[index];
+    const nome = typeof fase === 'object' ? fase.nome : fase;
+    const concluida = typeof fase === 'object' ? fase.concluida : false;
+
+    if (!concluida && isEditMode) {
+      // Marking as done in edit mode -> open modal for API call
+      setFaseModal({ open: true, faseIndex: index, faseName: nome });
+    } else if (concluida && isEditMode) {
+      // Unmarking in edit mode -> call API directly
+      toggleFaseApi(index, false, '');
+    } else {
+      // New project (no ID yet) -> toggle locally
+      const updatedFase = [...formData.fase];
+      updatedFase[index] = { ...updatedFase[index], concluida: !concluida, dataConclusao: !concluida ? new Date().toISOString() : null };
+      setFormData({ ...formData, fase: updatedFase });
+    }
+  };
+
+  const toggleFaseApi = async (faseIndex, concluida, observacoes) => {
+    try {
+      const response = await api.patch(`/api/projetos/${id}/fase-toggle`, {
+        faseIndex,
+        concluida,
+        observacoes,
+      });
+      setFormData(response.data.data.projeto);
+      toast.success(concluida ? 'Fase concluída! Log criado.' : 'Fase desmarcada.');
+    } catch (error) {
+      console.error('Erro ao atualizar fase:', error);
+      toast.error('Erro ao atualizar fase');
+    }
+  };
+
+  const handleFaseModalConfirm = (observacoes) => {
+    toggleFaseApi(faseModal.faseIndex, true, observacoes);
+    setFaseModal({ open: false, faseIndex: null, faseName: '' });
+  };
+
+  const handleFaseModalCancel = () => {
+    setFaseModal({ open: false, faseIndex: null, faseName: '' });
   };
 
   // Enviar formulário
@@ -292,20 +338,30 @@ const ProjetosForm = () => {
             </div>
             {formData.fase.length > 0 ? (
               <ul className="space-y-2 mt-2">
-                {formData.fase.map((item, index) => (
-                  <li key={index} className="flex items-center bg-gray-700 p-2 rounded-md">
-                    <span className="flex-1 text-white">{item}</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveFaseItem(index)}
-                      className="ml-2 text-red-400 hover:text-red-300 focus:outline-none"
-                    >
-                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </li>
-                ))}
+                {formData.fase.map((item, index) => {
+                  const nome = typeof item === 'object' ? item.nome : item;
+                  const concluida = typeof item === 'object' ? item.concluida : false;
+                  return (
+                    <li key={index} className="flex items-center bg-gray-700 p-2 rounded-md">
+                      <input
+                        type="checkbox"
+                        checked={concluida}
+                        onChange={() => handleFaseCheckbox(index)}
+                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-600 rounded bg-gray-700 mr-2 cursor-pointer flex-shrink-0"
+                      />
+                      <span className={`flex-1 text-white ${concluida ? 'line-through text-gray-500' : ''}`}>{nome}</span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveFaseItem(index)}
+                        className="ml-2 text-red-400 hover:text-red-300 focus:outline-none"
+                      >
+                        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <p className="text-gray-400 text-sm mt-2">Nenhum item adicionado à fase.</p>
@@ -398,6 +454,14 @@ const ProjetosForm = () => {
             </div>
           </div>
         </div>
+
+        {/* Modal de conclusão de fase */}
+        <FaseConclusaoModal
+          isOpen={faseModal.open}
+          faseName={faseModal.faseName}
+          onConfirm={handleFaseModalConfirm}
+          onCancel={handleFaseModalCancel}
+        />
 
         {/* Botões */}
         <div className="mt-6 flex justify-end space-x-3">

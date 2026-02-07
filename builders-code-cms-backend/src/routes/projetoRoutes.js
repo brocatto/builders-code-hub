@@ -7,6 +7,7 @@ const {
   createProjeto,
   updateProjeto,
   deleteProjeto,
+  toggleFaseConclusao,
   getAllProjetosPublic,
   getProjetoPublic
 } = require('../controllers/projetoController');
@@ -22,6 +23,9 @@ router.route('/public/:id')
 router.route('/')
   .get(protect, getAllProjetos)
   .post(protect, createProjeto);
+
+router.route('/:id/fase-toggle')
+  .patch(protect, toggleFaseConclusao);
 
 router.route('/:id')
   .get(protect, getProjeto)

@@ -16,10 +16,11 @@ const projetoSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
-    fase: {
-      type: [String],
-      default: [],
-    },
+    fase: [{
+      nome: { type: String, required: true },
+      concluida: { type: Boolean, default: false },
+      dataConclusao: { type: Date, default: null },
+    }],
     detalhes: {
       type: String,
     },
