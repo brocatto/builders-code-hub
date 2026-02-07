@@ -80,18 +80,47 @@ The CMS manages these content types:
 
 ## Database and Authentication
 
-- **MongoDB** connection configured in `builders-code-cms-backend/src/config/db.js`
-- **Initial admin user** automatically created on first run (username: admin, password: admin123)
+- **MongoDB Atlas** connection configured in `builders-code-cms-backend/src/config/db.js`
+- **Initial admin user** automatically created on first run:
+  - Email: `admin@builderhub.com`
+  - Password: `admin123`
 - **Role-based access** with 'admin' role for full access
-- **JWT tokens** stored in HTTP-only cookies for security
+- **JWT tokens** stored in HTTP-only cookies (Secure, SameSite=None)
 
 ## Environment Configuration
 
 Backend requires these environment variables:
 - `NODE_ENV` - development/production
 - `FRONTEND_URL` - CORS origin configuration
-- MongoDB connection string
-- JWT secret
+- `MONGODB_URI` - MongoDB Atlas connection string
+- `JWT_SECRET` - JWT signing secret
+
+Frontend (CMS) Vercel env var:
+- `VITE_API_URL` - Backend API URL (must be the stable production alias)
+
+## CORS Configuration
+
+Allowed origins are configured in `builders-code-cms-backend/src/app.js` (line ~43).
+Includes localhost ports, Vercel subdomains (regex), and custom domains:
+- `builderscode.com.br`, `www.builderscode.com.br`, `admin.builderscode.com.br`
+
+## Deployment (Vercel)
+
+Each subdirectory is a **separate Vercel project**. GitHub auto-deploy is **disconnected** to avoid broken deploys from the monorepo root.
+
+**Always deploy manually from inside each subdirectory:**
+```bash
+cd builders-code-cms-backend && npx vercel --prod
+cd builders-code-cms-frontend && npx vercel --prod
+cd builders-code-v3 && npx vercel --prod
+```
+
+Production URLs:
+- **Backend API**: `builders-code-cms-backend-brocattos-projects.vercel.app`
+- **CMS Admin**: `admin.builderscode.com.br`
+- **Main Website**: `builders-code-v3-brocattos-projects.vercel.app`
+
+**NEVER** use `git push` expecting Vercel auto-deploy. It will deploy from repo root and break things.
 
 ## Development Workflow
 

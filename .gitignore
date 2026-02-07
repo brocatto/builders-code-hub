@@ -34,7 +34,10 @@ Thumbs.db
 
 # Temporary files
 *.tmp
+*.pid
+cookies.txt
 .temp/
+*-backup/
 
 # Coverage
 coverage/
