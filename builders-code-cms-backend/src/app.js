@@ -51,6 +51,7 @@ const allowedOrigins = [
   // Domínio personalizado (com e sem www)
   'https://www.builderscode.com.br',
   'https://builderscode.com.br',
+  'https://admin.builderscode.com.br',
   // Permite qualquer subdomínio da Vercel para este projeto
   /https:\/\/.*\.vercel\.app$/
 ].filter(Boolean);
