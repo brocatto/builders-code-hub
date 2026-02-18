@@ -44,10 +44,13 @@ export const logsAPI = {
   getAll: () => api.get('/logs/public'),
   
   // Get logs by project ID (public)
-  getByProject: (projectId) => api.get(`/logs/public?projeto=${projectId}`),
+  getByProject: (projectName) => api.get(`/logs/public?projeto=${projectName}&sort=-dataReal`),
   
   // Get recent logs (public)
   getRecent: (limit = 10) => api.get(`/logs/public?limit=${limit}&sort=-dataCriacao`),
+
+  // Get logs by project ObjectId (public)
+  getByProjectId: (projetoId) => api.get(`/logs/public?projetoId=${projetoId}&sort=-dataReal`),
 };
 
 export const ideasAPI = {

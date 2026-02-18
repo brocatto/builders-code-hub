@@ -152,6 +152,62 @@ export const useIdeas = (limit = 5) => {
   return { ideas, loading, error };
 };
 
+// Hook for fetching logs by project (lazy — only fetches when projetoId is truthy)
+// Tries projetoId first; if no results, falls back to projeto name (for older logs)
+export const useProjectLogs = (projetoId, projetoNome) => {
+  const [logs, setLogs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!projetoId) {
+      setLogs([]);
+      setLoading(false);
+      return;
+    }
+
+    const extractLogs = (data) => {
+      if (data && data.data && Array.isArray(data.data.logs)) return data.data.logs;
+      if (Array.isArray(data)) return data;
+      return [];
+    };
+
+    const fetchLogs = async () => {
+      try {
+        setLoading(true);
+
+        // Try by ObjectId first
+        let result = extractLogs(await logsAPI.getByProjectId(projetoId));
+
+        // Fallback: older logs may only have the projeto name string
+        if (result.length === 0 && projetoNome) {
+          result = extractLogs(await logsAPI.getByProject(projetoNome));
+        }
+
+        setLogs(result);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching project logs:', err);
+        setError(err.message || 'Erro ao carregar logs do projeto');
+        setLogs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      setError('Timeout ao carregar logs do projeto');
+      setLoading(false);
+      setLogs([]);
+    }, 10000);
+
+    fetchLogs().finally(() => clearTimeout(timeoutId));
+    return () => clearTimeout(timeoutId);
+  }, [projetoId, projetoNome]);
+
+  return { logs, loading, error };
+};
+
 // Hook for fetching categories
 export const useCategories = () => {
   const [categories, setCategories] = useState([]);
