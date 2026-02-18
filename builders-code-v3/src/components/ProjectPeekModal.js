@@ -104,9 +104,16 @@ const ProjectPeekModal = ({ projeto, isOpen, onClose }) => {
           >
             {/* Header */}
             <div className="flex items-start justify-between p-6 pb-0">
-              <h2 className="text-2xl md:text-3xl font-display font-bold text-gradient pr-4">
-                {projeto.nome}
-              </h2>
+              <div className="pr-4">
+                <h2 className="text-2xl md:text-3xl font-display font-bold text-gradient">
+                  {projeto.nome}
+                </h2>
+                {projeto.categoria && (
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary/80 inline-block mt-2">
+                    {projeto.categoria}
+                  </span>
+                )}
+              </div>
               <button
                 onClick={onClose}
                 className="p-1.5 rounded-lg hover:bg-white/10 transition-colors flex-shrink-0"
@@ -119,9 +126,13 @@ const ProjectPeekModal = ({ projeto, isOpen, onClose }) => {
             {/* Scrollable body */}
             <div className="flex-1 overflow-y-auto p-6 pt-4 modal-scrollbar">
               {/* Description */}
-              <p className="text-secondary-text mb-2">{projeto.descricao}</p>
-              {projeto.detalhes && (
-                <p className="text-sm text-gray-300 mb-4">{projeto.detalhes}</p>
+              {projeto.detalhes ? (
+                <>
+                  <p className="text-secondary-text text-sm mb-3">{projeto.descricao}</p>
+                  <p className="text-gray-300 mb-4">{projeto.detalhes}</p>
+                </>
+              ) : (
+                <p className="text-gray-300 mb-4">{projeto.descricao}</p>
               )}
 
               {/* Fases */}
@@ -161,10 +172,10 @@ const ProjectPeekModal = ({ projeto, isOpen, onClose }) => {
                       return (
                         <li key={i} className="flex items-start gap-2.5 text-sm">
                           <span
-                            className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded flex items-center justify-center text-xs ${
+                            className={`mt-0.5 flex-shrink-0 w-5 h-5 rounded flex items-center justify-center text-xs border ${
                               concluida
-                                ? 'bg-green-500/20 text-green-400'
-                                : 'bg-white/5 text-gray-500'
+                                ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                                : 'bg-white/5 border-white/10'
                             }`}
                           >
                             {concluida ? '\u2713' : ''}
